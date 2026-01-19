@@ -167,9 +167,9 @@ function Field({ label, value }: { label: string; value?: string }) {
 function ListCard({ title, items }: { title: string; items?: string[] }) {
   return (
     <div className="bg-white  rounded-lg border">
-      <strong>{title}</strong>
+      <p className="p-3 font-medium text-xl text-gray-700">{title}</p>
       <hr />
-      <ul className="list-disc pl-5 mt-2">
+      <ul className=" p-3 mt-2">
         {items?.length ? (
           items.map((item, idx) => <li key={idx}>{item}</li>)
         ) : (
