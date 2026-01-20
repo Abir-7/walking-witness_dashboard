@@ -11,6 +11,7 @@ import CPagination from "../CPagination";
 import { useGetProjectsQuery } from "@/lib/redux/api/dashboardApi";
 import { TProject } from "@/types/redux/project";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function ProjectsClient() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +31,7 @@ export function ProjectsClient() {
   const { data, isLoading, isError } = useGetProjectsQuery({
     search_term: debouncedSearch,
     page,
-    page_size: 10,
+    page_size: 8,
   });
 
   const currentData: TProject[] = data?.results || [];
@@ -53,14 +54,16 @@ export function ProjectsClient() {
           <h2 className="text-lg font-semibold text-primary dark:text-gray-50">
             Projects
           </h2>
-          <button className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-md hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors text-sm font-medium cursor-pointer">
-            <HugeiconsIcon
-              icon={PlusSignSquareIcon}
-              size={20}
-              strokeWidth={1}
-            />
-            Add
-          </button>
+          <Link href="/projects/create">
+            <Button className="text-red-500">
+              <HugeiconsIcon
+                icon={PlusSignSquareIcon}
+                size={20}
+                strokeWidth={1}
+              />
+              Add
+            </Button>
+          </Link>
         </div>
 
         {/* Search */}

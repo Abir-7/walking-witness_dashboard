@@ -1,17 +1,15 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// components/Projects/ProjectUpdateForm.tsx
+// components/Projects/ProjectCreateForm.tsx
 "use client";
 
 import { useForm, useFieldArray } from "react-hook-form";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
 import {
   useGetProgramsQuery,
-  useGetProjectDetailsQuery,
+  useGetCategoriesQuery,
 } from "@/lib/redux/api/dashboardApi";
-import { useUpdateProjectMutation } from "@/lib/redux/api/dashboardWriteApi";
+import { useCreateProjectMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { baseUrl } from "@/config/evn";
 import { Button } from "@/components/ui/button";
 
@@ -40,110 +38,62 @@ type ProjectFormData = {
   other_supports: { amount: string; currency: string }[];
 };
 
-export default function ProjectUpdateForm() {
-  const params = useParams<{ id: string }>();
-  const projectId = Number(params.id);
-
-  const { data: project, isLoading } = useGetProjectDetailsQuery(projectId);
+export default function ProjectCreateForm() {
   const { data: programs = [], isLoading: loadingPrograms } =
     useGetProgramsQuery();
   const { data: categories = [], isLoading: loadingCategory } =
-    useGetProgramsQuery();
-  const [updateProject, { isLoading: isUpdating, error }] =
-    useUpdateProjectMutation();
-  console.log(error);
-  const { register, control, handleSubmit, reset } = useForm<ProjectFormData>({
-    defaultValues: {
-      title: "",
-      program: "",
-      category: "",
-      village: "",
-      location: "",
-      pastor_name: "",
-      sponsor_name: "",
-      established_date: "",
-      project_details: "",
-      recent_updates: "",
-      project_stories: "",
-      total_benefited_families: 0,
-      impact: "",
-      pastor_support_prices: [{ amount: "", currency: "USD" }],
-      livestock_items: [
-        { name: "", amount: "", quantity: "", currency: "USD" },
-      ],
-      other_supports: [{ amount: "", currency: "USD" }],
-    },
-  });
-
+    useGetCategoriesQuery();
+  const [createProject, { isLoading: isCreating, error }] =
+    useCreateProjectMutation();
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
-  /* -------- HYDRATE FORM FROM API -------- */
-
-  useEffect(() => {
-    if (!project) return;
-
-    reset({
-      title: project.title ?? "",
-      program: project.program ? String(project.program.id) : "",
-      category: String(project.category.id) ?? "",
-      village: project.village ?? "",
-      location: project.location ?? "",
-      pastor_name: project.pastor_name ?? "",
-      sponsor_name: project.sponsor_name ?? "",
-      established_date: project.established_date?.split("T")[0] ?? "",
-      project_details: project.project_details ?? "",
-      recent_updates: project.recent_updates ?? "",
-      project_stories: project.project_stories ?? "",
-      total_benefited_families: project.total_benefited_families ?? 0,
-      impact: project.impact ?? "",
-      pastor_support_prices: project.pastor_support_prices?.length
-        ? project.pastor_support_prices
-        : [{ amount: "", currency: "USD" }],
-      livestock_items: project.livestock_items?.length
-        ? project.livestock_items.map((item: any) => ({
-            ...item,
-            quantity: String(item.quantity),
-          }))
-        : [{ name: "", amount: "", quantity: "", currency: "USD" }],
-      other_supports: project.other_supports?.length
-        ? project.other_supports
-        : [{ amount: "", currency: "USD" }],
+  const { register, control, handleSubmit, reset, setValue } =
+    useForm<ProjectFormData>({
+      defaultValues: {
+        cover_image: null,
+        title: "",
+        program: "",
+        category: "",
+        village: "",
+        location: "",
+        pastor_name: "",
+        sponsor_name: "",
+        established_date: "",
+        project_details: "",
+        recent_updates: "",
+        project_stories: "",
+        total_benefited_families: 0,
+        impact: "",
+        pastor_support_prices: [{ amount: "", currency: "USD" }],
+        livestock_items: [
+          { name: "", amount: "", quantity: "", currency: "USD" },
+        ],
+        other_supports: [{ amount: "", currency: "USD" }],
+      },
     });
 
-    if (project.cover_image) {
-      setCoverPreview(`${baseUrl}${project.cover_image}`);
-    }
-  }, [project, reset]);
-
-  /* -------- FILE PREVIEW -------- */
-
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setCoverPreview(URL.createObjectURL(file));
-    }
+    const file = e.target.files?.[0] ?? null;
+    setCoverPreview(file ? URL.createObjectURL(file) : null);
+    setValue("cover_image", file ? e.target.files : null); // <-- important
   };
 
-  /* -------- SUBMIT -------- */
-
-  const onSubmit = async (dat_a: ProjectFormData) => {
-    console.log(dat_a);
-    const data = {
-      ...dat_a,
-      program: Number(dat_a.program),
-      category: Number(dat_a.category),
-    };
+  const onSubmit = async (data: ProjectFormData) => {
     console.log(data);
     try {
       const formData = new FormData();
 
-      // image
       if (data.cover_image?.[0]) {
         formData.append("cover_image", data.cover_image[0]);
       }
 
-      // primitives & arrays
-      Object.entries(data).forEach(([key, value]) => {
+      const payload = {
+        ...data,
+        program: Number(data.program),
+        category: Number(data.category),
+      };
+
+      Object.entries(payload).forEach(([key, value]) => {
         if (key === "cover_image") return;
 
         if (
@@ -151,29 +101,25 @@ export default function ProjectUpdateForm() {
           typeof value === "number" ||
           typeof value === "boolean"
         ) {
-          formData.append(key, String(value)); // <-- keep plain string/number/boolean
+          formData.append(key, String(value));
         } else {
-          formData.append(key, JSON.stringify(value)); // <-- only for arrays/objects
+          formData.append(key, JSON.stringify(value));
         }
       });
 
-      await updateProject({
-        id: projectId,
-        body: formData,
-      }).unwrap();
-
-      alert("Project updated successfully");
+      await createProject({ body: formData }).unwrap();
+      alert("Project created successfully");
+      reset(); // reset form
+      setCoverPreview(null);
     } catch (err: any) {
-      console.error("Update failed", err);
-      alert(err.data.message || "Update failed");
+      console.error("Create failed", err);
+      alert(err.data?.message || "Create failed");
     }
   };
 
-  if (isLoading || loadingPrograms || loadingCategory) {
-    return <div className="p-6">Loading project...</div>;
+  if (loadingPrograms || loadingCategory) {
+    return <div className="p-6">Loading...</div>;
   }
-
-  /* ---------------- UI ---------------- */
 
   return (
     <form
@@ -183,12 +129,9 @@ export default function ProjectUpdateForm() {
       {/* Cover Image */}
       <div className="space-y-2">
         <label className="block font-medium text-gray-700">Cover Image</label>
-
         <div
           onClick={() => document.getElementById("cover-upload")?.click()}
-          className="relative flex items-center justify-center w-full h-48
-      rounded-lg border-2 border-dashed border-gray-300
-      cursor-pointer hover:border-gray-400 transition bg-gray-50"
+          className="relative flex items-center justify-center w-full h-48 rounded-lg border-2 border-dashed border-gray-300 cursor-pointer hover:border-gray-400 transition bg-gray-50"
         >
           {coverPreview ? (
             <Image
@@ -218,14 +161,11 @@ export default function ProjectUpdateForm() {
               <p className="text-xs text-gray-400">PNG, JPG up to 5MB</p>
             </div>
           )}
-
-          {/* Hidden input */}
           <input
             id="cover-upload"
             type="file"
             accept="image/*"
-            {...register("cover_image")}
-            onChange={handleCoverChange}
+            onChange={handleCoverChange} // manually set the value
             className="hidden"
           />
         </div>
@@ -236,43 +176,34 @@ export default function ProjectUpdateForm() {
         <Input label="Title" {...register("title")} />
         <div className="space-y-1">
           <label className="text-sm font-semibold text-gray-700">Program</label>
-          {loadingPrograms ? (
-            <p className="text-sm text-gray-500">Loading programs...</p>
-          ) : (
-            <select
-              {...register("program")}
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">Select a program</option>
-              {programs.map((prog) => (
-                <option key={prog.id} value={prog.id}>
-                  {prog.name}
-                </option>
-              ))}
-            </select>
-          )}
+          <select
+            {...register("program")}
+            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Select a program</option>
+            {programs.map((prog) => (
+              <option key={prog.id} value={prog.id}>
+                {prog.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="space-y-1">
           <label className="text-sm font-semibold text-gray-700">
             Category
           </label>
-          {loadingPrograms ? (
-            <p className="text-sm text-gray-500">Loading category...</p>
-          ) : (
-            <select
-              {...register("category")}
-              className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-            >
-              <option value="">Select a Category</option>
-              {categories.map((prog) => (
-                <option key={prog.id} value={prog.id}>
-                  {prog.name}
-                </option>
-              ))}
-            </select>
-          )}
+          <select
+            {...register("category")}
+            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Select a category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
         </div>
-        {/* <Input label="Category" {...register("category")} /> */}
         <Input label="Village" {...register("village")} />
         <Input label="Location" {...register("location")} />
         <Input label="Pastor Name" {...register("pastor_name")} />
@@ -303,7 +234,6 @@ export default function ProjectUpdateForm() {
         fields={[{ amount: "", currency: "USD" }]}
         labels={["Amount", "Currency"]}
       />
-
       <DynamicArray
         register={register}
         control={control}
@@ -311,7 +241,6 @@ export default function ProjectUpdateForm() {
         fields={[{ name: "", amount: "", quantity: "", currency: "USD" }]}
         labels={["Name", "Amount", "Quantity", "Currency"]}
       />
-
       <DynamicArray
         register={register}
         control={control}
@@ -324,7 +253,7 @@ export default function ProjectUpdateForm() {
         type="submit"
         className="px-5 py-3 bg-red-400 text-white rounded-lg font-medium"
       >
-        Save Project
+        Create Project
       </Button>
     </form>
   );
@@ -357,19 +286,14 @@ function DynamicArray({ register, control, name, fields, labels }: any) {
     fields: arrFields,
     append,
     remove,
-  } = useFieldArray({
-    control,
-    name,
-  });
+  } = useFieldArray({ control, name });
 
   return (
     <div className="space-y-4 rounded-xl border p-5 bg-gray-50">
-      {/* Section Title */}
       <div className="flex items-center justify-between">
         <h3 className="text-base font-semibold text-gray-800 capitalize">
           {name.replace(/_/g, " ")}
         </h3>
-
         <button
           type="button"
           onClick={() => append(fields[0])}
@@ -379,7 +303,6 @@ function DynamicArray({ register, control, name, fields, labels }: any) {
         </button>
       </div>
 
-      {/* Items */}
       {arrFields.length === 0 && (
         <p className="text-sm text-gray-400">No items added yet</p>
       )}
@@ -389,7 +312,6 @@ function DynamicArray({ register, control, name, fields, labels }: any) {
           key={item.id}
           className="relative rounded-lg border bg-white p-4 shadow-sm space-y-3"
         >
-          {/* Remove Button */}
           <button
             type="button"
             onClick={() => remove(index)}
@@ -397,14 +319,8 @@ function DynamicArray({ register, control, name, fields, labels }: any) {
           >
             Remove
           </button>
-
-          {/* Inputs */}
           <div
-            className={`grid gap-3 ${
-              labels.length === 4
-                ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-                : "grid-cols-1 sm:grid-cols-2"
-            }`}
+            className={`grid gap-3 ${labels.length === 4 ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" : "grid-cols-1 sm:grid-cols-2"}`}
           >
             {labels.map((lbl: string, i: number) => (
               <div key={i} className="space-y-1">

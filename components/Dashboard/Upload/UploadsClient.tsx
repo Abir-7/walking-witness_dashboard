@@ -1,306 +1,307 @@
+/* eslint-disable react-hooks/preserve-manual-memoization */
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { PlusSignSquareIcon } from "@hugeicons/core-free-icons";
 
-import { Pagination } from "@/components/Dashboard/Shared/Pagination";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { Upload, UploadStatus, UploadType } from "@/types/uploads";
-import { UploadsService } from "@/data/uploads";
-import { ButtonGroup } from "@/components/ui/button-group";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
-const ITEMS_PER_PAGE = 7;
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import {
+  useGetBooksQuery,
+  useGetContentsQuery,
+} from "@/lib/redux/api/dashboardApi";
 
-const StatusBadge = ({ status }: { status: UploadStatus }) => {
-  const styles: Record<UploadStatus, string> = {
-    Draft:
-      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-    Published:
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  };
-  return (
-    <span
-      className={cn(
-        "px-2 pb-1 rounded-full text-xs font-medium",
-        styles[status]
-      )}
-    >
-      {status}
-    </span>
-  );
-};
+/* ------------------ Types ------------------ */
 
-interface UploadsClientProps {
-  filterType?: UploadType;
+export interface TContent {
+  id: number;
+  image: string;
+  name: string;
+  title: string;
+  information: string;
+  description: string;
+  type: string;
+  link: string;
+  allow_project: boolean;
+  created_at: string;
 }
 
-export function UploadsClient({ filterType }: UploadsClientProps) {
-  const [uploads, setUploads] = useState<Upload[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filter, setFilter] = useState<UploadType | "all">(filterType ?? "all");
+export interface TBook {
+  id: number;
+  name: string;
+  cover: string;
+  languages: string[];
+  pdfs: Record<string, string>;
+}
 
+/* ------------------ Component ------------------ */
+
+export function UploadsClient() {
   const router = useRouter();
+  const [search, setSearch] = useState("");
 
-  const fetchUploads = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await UploadsService.getAll();
-      setUploads(data);
-    } catch (err) {
-      console.error("Failed to fetch uploads", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const page = 1;
+  const limit = 10;
 
-  useEffect(() => {
-    fetchUploads();
-  }, [fetchUploads]);
+  // Fetch content with search, page, limit
+  const { data: contentsData, isLoading: isContentLoading } =
+    useGetContentsQuery({
+      search_term: search,
+      page,
+      limit,
+    });
 
-  const filteredUploads = useMemo(() => {
-    const base =
-      filter === "all" ? uploads : uploads.filter((u) => u.type === filter);
-
-    if (!searchQuery) return base;
-
-    const q = searchQuery.toLowerCase();
-    return base.filter(
-      (u) =>
-        u.title.toLowerCase().includes(q) ||
-        u.type.toLowerCase().includes(q) ||
-        u.status.toLowerCase().includes(q)
-    );
-  }, [uploads, searchQuery, filter]);
-
-  const totalPages = useMemo(
-    () => Math.max(Math.ceil(filteredUploads.length / ITEMS_PER_PAGE), 1),
-    [filteredUploads]
-  );
-
-  const currentData = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredUploads.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredUploads, currentPage]);
-
-  const handleRowClick = useCallback(
-    (id: string) => {
-      router.push(`/upload/${id}`);
-    },
-    [router]
-  );
-
-  const handleToggleStatus = useCallback(
-    async (e: React.MouseEvent, id: string, currentStatus: UploadStatus) => {
-      e.stopPropagation();
-      const nextStatus: UploadStatus =
-        currentStatus === "Draft" ? "Published" : "Draft";
-
-      setUploads((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, status: nextStatus } : u))
-      );
-
-      try {
-        await UploadsService.updateStatus(id, nextStatus);
-      } catch (error) {
-        console.error("Failed to update upload status", error);
-        fetchUploads();
-      }
-    },
-    [fetchUploads]
-  );
-
-  const handleAddBook = useCallback(
-    () => router.push("/upload/new-upload"),
-    [router]
-  );
-  // const handleAddContent = useCallback(
-  //   () => router.push("/upload/content"),
-  //   [router]
-  // );
+  // Fetch books with search, page, limit
+  const { data: booksData, isLoading: isBookLoading } = useGetBooksQuery({
+    search_term: search,
+    page,
+    limit,
+  });
 
   return (
-    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+    <div className="rounded-lg border bg-background">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h2 className="text-lg font-semibold text-primary dark:text-gray-50">
-          Uploads
-        </h2>
-
-        <div className="flex items-center gap-3">
-          <Button
-            className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition-colors text-sm font-medium cursor-pointer"
-            onClick={handleAddBook}
-          >
-            <HugeiconsIcon
-              icon={PlusSignSquareIcon}
-              size={20}
-              strokeWidth={1}
-            />{" "}
-            New Upload
-          </Button>
-          {/* <Button
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors text-sm font-medium cursor-pointer"
-            onClick={handleAddContent}
-          >
-            <HugeiconsIcon
-              icon={PlusSignSquareIcon}
-              size={20}
-              strokeWidth={1}
-            />{" "}
-            Add Content
-          </Button> */}
-        </div>
+      <div className="p-4 border-b flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Uploads</h2>
+        <Button
+          className="bg-red-400"
+          onClick={() => router.push("/upload/new-upload")}
+        >
+          New Upload
+        </Button>
       </div>
 
       {/* Search */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3">
-          <ButtonGroup>
-            <Button
-              className={cn(
-                "transition-colors px-4 py-2 rounded-md font-medium",
-                filter === "all" ? "bg-red-500 text-white" : "bg-black/55"
-              )}
-              onClick={() => setFilter("all")}
-            >
-              All
-            </Button>
-            <Button
-              className={cn(
-                "transition-colors px-4 py-2 rounded-md font-medium",
-                filter === "Book" ? "bg-red-500 text-white" : "bg-black/55"
-              )}
-              onClick={() => setFilter("Book")}
-            >
-              Book
-            </Button>
-            <Button
-              className={cn(
-                "transition-colors px-4 py-2 rounded-md font-medium",
-                filter === "Content" ? "bg-red-500 text-white" : "bg-black/55"
-              )}
-              onClick={() => setFilter("Content")}
-            >
-              Content
-            </Button>
-          </ButtonGroup>
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary" />
-            <input
-              type="text"
-              placeholder="Search uploads..."
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-gray-800 text-primary placeholder-gray-500 h-10"
-            />
-          </div>
+      <div className="p-4 border-b">
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search uploads..."
+            className="h-10 w-full pl-9 pr-4 text-sm border rounded-md bg-background"
+          />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-b-xl">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-              <th className="p-5 font-medium text-secondary dark:text-gray-400">
-                Title
-              </th>
-              <th className="p-5 font-medium text-secondary dark:text-gray-400">
-                Type
-              </th>
-              <th className="p-5 font-medium text-secondary dark:text-gray-400">
-                Created
-              </th>
-              <th className="p-5 font-medium text-secondary dark:text-gray-400">
-                Status
-              </th>
-              <th className="p-5 font-medium text-secondary dark:text-gray-400">
-                Action
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-            {isLoading ? (
-              Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
-                <tr key={index} className="bg-white dark:bg-gray-800">
-                  {Array.from({ length: 5 }).map((__, i) => (
-                    <td key={i} className="p-5">
-                      <Skeleton className="h-4 w-24" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : currentData.length > 0 ? (
-              currentData.map((item) => (
-                <tr
-                  key={item.id}
-                  onClick={() => handleRowClick(item.id)}
-                  className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
-                >
-                  <td className="p-5 font-medium text-primary">{item.title}</td>
-                  <td className="p-5 text-secondary dark:text-gray-400">
+      {/* Tabs */}
+      <Tabs defaultValue="books" className="p-4">
+        <TabsList>
+          <TabsTrigger value="books">Books</TabsTrigger>
+          <TabsTrigger value="content">Content</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="books">
+          <BooksTable
+            data={booksData?.data || []}
+            isLoading={isBookLoading}
+            onRowClick={(id) => router.push(`/upload/${id}`)}
+          />
+        </TabsContent>
+
+        <TabsContent value="content">
+          <ContentTable
+            data={contentsData || []}
+            isLoading={isContentLoading}
+            onRowClick={(id) => router.push(`/upload/${id}`)}
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+/* ------------------ Table Components ------------------ */
+
+function ContentTable({
+  data,
+  isLoading,
+  onRowClick,
+}: {
+  data: TContent[];
+  isLoading: boolean;
+  onRowClick: (id: number) => void;
+}) {
+  if (isLoading) {
+    return <p className="p-4 text-center text-muted-foreground">Loading...</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b bg-muted/50">
+            <th className="p-5 text-left">Image</th>
+            <th className="p-5 text-left">Title</th>
+            <th className="p-5 text-left">Type</th>
+            <th className="p-5 text-left">Project</th>
+            <th className="p-5 text-left">Created</th>
+            <th className="p-5 text-left">Link</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y">
+          {data.length ? (
+            data.map((item) => (
+              <tr
+                key={item.id}
+                onClick={() => onRowClick(item.id)}
+                className="hover:bg-muted cursor-pointer transition"
+              >
+                <td className="p-5">
+                  <Image
+                    width={100}
+                    height={100}
+                    src={item.image}
+                    alt={item.title}
+                    className="h-12 w-12 rounded-md object-cover border"
+                    unoptimized
+                  />
+                </td>
+
+                <td className="p-5 font-medium">
+                  <div>{item.title}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-1">
+                    {item.information}
+                  </div>
+                </td>
+
+                <td className="p-5">
+                  <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">
                     {item.type}
-                  </td>
-                  <td className="p-5 text-secondary dark:text-gray-400">
-                    {item.createdAt}
-                  </td>
-                  <td className="p-5">
-                    <StatusBadge status={item.status} />
-                  </td>
-                  <td className="p-5">
-                    <div
-                      className="flex items-center gap-4 font-medium"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={(e) =>
-                          handleToggleStatus(e, item.id, item.status)
-                        }
-                        className="text-[#027A48] hover:text-[#026aa2] dark:text-green-400 dark:hover:text-green-300 transition-colors cursor-pointer hover:bg-green-100 p-1 rounded"
-                      >
-                        {item.status === "Draft" ? "Publish" : "Unpublish"}
-                      </button>
-                      <button
-                        onClick={() => handleRowClick(item.id)}
-                        className="text-primary hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors cursor-pointer hover:bg-blue-50 p-1 rounded"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="px-6 py-8 text-center text-secondary dark:text-gray-400"
-                >
-                  No uploads found
+                  </span>
+                </td>
+
+                <td className="p-5">
+                  {item.allow_project ? (
+                    <span className="text-green-600 font-medium text-xs">
+                      Allowed
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground text-xs">
+                      Disabled
+                    </span>
+                  )}
+                </td>
+
+                <td className="p-5 text-muted-foreground text-xs">
+                  {new Date(item.created_at).toLocaleDateString()}
+                </td>
+
+                <td className="p-5">
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-primary hover:underline text-xs"
+                  >
+                    View
+                  </a>
                 </td>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                No content found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        className="border-t border-gray-200 dark:border-gray-700"
-      />
+function BooksTable({
+  data,
+  isLoading,
+  onRowClick,
+}: {
+  data: TBook[];
+  isLoading: boolean;
+  onRowClick: (id: number) => void;
+}) {
+  if (isLoading) {
+    return <p className="p-4 text-center text-muted-foreground">Loading...</p>;
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b bg-muted/50">
+            <th className="p-5 text-left">Cover</th>
+            <th className="p-5 text-left">Name</th>
+            <th className="p-5 text-left">Languages</th>
+            <th className="p-5 text-left">PDFs</th>
+          </tr>
+        </thead>
+
+        <tbody className="divide-y">
+          {data.length ? (
+            data.map((book) => (
+              <tr
+                key={book.id}
+                onClick={() => onRowClick(book.id)}
+                className="hover:bg-muted cursor-pointer transition"
+              >
+                <td className="p-5">
+                  <Image
+                    width={100}
+                    height={100}
+                    src={book.cover}
+                    alt={book.name}
+                    className="h-14 w-10 object-cover rounded border"
+                    unoptimized
+                  />
+                </td>
+
+                <td className="p-5 font-medium">{book.name}</td>
+
+                <td className="p-5">
+                  <div className="flex gap-2">
+                    {book.languages.map((lang) => (
+                      <span
+                        key={lang}
+                        className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium"
+                      >
+                        {lang.toUpperCase()}
+                      </span>
+                    ))}
+                  </div>
+                </td>
+
+                <td className="p-5">
+                  <div className="flex gap-3">
+                    {Object.entries(book.pdfs).map(([lang, url]) => (
+                      <a
+                        key={lang}
+                        href={url}
+                        target="_blank"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-primary hover:underline text-sm"
+                      >
+                        {lang.toUpperCase()} PDF
+                      </a>
+                    ))}
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={4} className="p-8 text-center text-muted-foreground">
+                No books found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 }

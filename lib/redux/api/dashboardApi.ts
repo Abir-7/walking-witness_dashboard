@@ -1,3 +1,4 @@
+import { use } from "react";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   AdminDashboardResponse,
@@ -7,6 +8,19 @@ import {
 import { baseApi } from "./baseApi";
 import { DonationsResponse } from "@/types/redux/donation";
 import { TProject, TProjectRes } from "@/types/redux/project";
+import { TBook, TContent } from "@/components/Dashboard/Upload/UploadsClient";
+
+export interface GetBooksParams {
+  search_term?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface GetContentsParams {
+  search_term?: string;
+  page?: number;
+  limit?: number;
+}
 
 export const dashboardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -70,6 +84,64 @@ export const dashboardApi = baseApi.injectEndpoints({
     }),
     getProjectDetails: builder.query<TProject, number>({
       query: (id) => `/dashboard/project-details/${id}`,
+      providesTags: ["Projects"],
+    }),
+
+    // program api
+    getPrograms: builder.query<
+      { id: number; name: string; image: string }[],
+      void
+    >({
+      query: () => "/dashboard/programs",
+      providesTags: ["Programs"],
+    }),
+    // category api
+    getCategories: builder.query<
+      { id: number; name: string; image: string }[],
+      void
+    >({
+      query: () => "/dashboard/categories",
+      providesTags: ["Categories"],
+    }),
+    // privecy api
+    getPrivacyPolicies: builder.query<
+      { title: string; description: string }[],
+      void
+    >({
+      query: () => "/settings/admin/privacy-policy",
+      providesTags: ["PrivacyPolicy"],
+    }),
+    // content api
+    getContents: builder.query<
+      { data: TContent[]; total: number },
+      GetContentsParams | void
+    >({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.search_term)
+          searchParams.append("search", params.search_term);
+        if (params?.page) searchParams.append("page", params.page.toString());
+        if (params?.limit)
+          searchParams.append("limit", params.limit.toString());
+        const queryString = searchParams.toString();
+        return `/dashboard/program-details${queryString ? `?${queryString}` : ""}`;
+      },
+    }),
+    // book api
+    getBooks: builder.query<
+      { data: TBook[]; total: number },
+      GetBooksParams | void
+    >({
+      query: (params) => {
+        const searchParams = new URLSearchParams();
+        if (params?.search_term)
+          searchParams.append("search", params.search_term);
+        if (params?.page) searchParams.append("page", params.page.toString());
+        if (params?.limit)
+          searchParams.append("limit", params.limit.toString());
+        const queryString = searchParams.toString();
+        return `/books/list${queryString ? `?${queryString}` : ""}`;
+      },
     }),
   }),
   overrideExisting: false,
@@ -83,4 +155,9 @@ export const {
   useGetDonationsQuery,
   useGetProjectsQuery,
   useGetProjectDetailsQuery,
+  useGetProgramsQuery,
+  useGetCategoriesQuery,
+  useGetPrivacyPoliciesQuery,
+  useGetContentsQuery,
+  useGetBooksQuery,
 } = dashboardApi;
