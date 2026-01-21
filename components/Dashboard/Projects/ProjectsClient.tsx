@@ -31,7 +31,7 @@ export function ProjectsClient() {
   const { data, isLoading, isError } = useGetProjectsQuery({
     search_term: debouncedSearch,
     page,
-    page_size: 8,
+    page_size: 10,
   });
 
   const currentData: TProject[] = data?.results || [];

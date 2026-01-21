@@ -13,6 +13,7 @@ export const authApi = baseApi.injectEndpoints({
     }),
     getme: builder.query<GetMeResponse, void>({
       query: () => "/settings/personal-info/me",
+      providesTags: ["User"],
     }),
   }),
   overrideExisting: false,

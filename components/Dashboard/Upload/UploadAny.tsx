@@ -30,21 +30,7 @@ const UploadAny = () => {
     <>
       <DashboardHeader title={header.title} description={header.description} />
       <div className="flex w-full flex-col gap-6 p-5">
-        <Tabs
-          defaultValue="book"
-          onValueChange={(val) => setActiveTab(val as "book" | "content")}
-        >
-          <TabsList className="mb-3 h-10 w-2xl">
-            <TabsTrigger value="book">Book</TabsTrigger>
-            <TabsTrigger value="content">Content</TabsTrigger>
-          </TabsList>
-          <TabsContent value="book">
-            <UploadBook />
-          </TabsContent>
-          <TabsContent value="content">
-            <UploadContent />
-          </TabsContent>
-        </Tabs>
+        <UploadBook />
       </div>
     </>
   );

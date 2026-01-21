@@ -113,38 +113,59 @@ export const dashboardApi = baseApi.injectEndpoints({
     }),
     // content api
     getContents: builder.query<
-      { data: TContent[]; total: number },
+      { data: TContent[]; total_pages: number; current_page: number },
       GetContentsParams | void
     >({
       query: (params) => {
         const searchParams = new URLSearchParams();
+
         if (params?.search_term)
-          searchParams.append("search", params.search_term);
+          searchParams.append("search_term", params.search_term);
         if (params?.page) searchParams.append("page", params.page.toString());
         if (params?.limit)
-          searchParams.append("limit", params.limit.toString());
+          searchParams.append("page_size", params.limit.toString());
         const queryString = searchParams.toString();
         return `/dashboard/program-details${queryString ? `?${queryString}` : ""}`;
       },
     }),
+    getProgram: builder.query<TContent, string>({
+      query: (id) => `dashboard/program-details/${id}`,
+      providesTags: ["Programs"],
+    }),
     // book api
     getBooks: builder.query<
-      { data: TBook[]; total: number },
+      { data: TBook[]; total_pages: number; current_page: number },
       GetBooksParams | void
     >({
       query: (params) => {
         const searchParams = new URLSearchParams();
         if (params?.search_term)
-          searchParams.append("search", params.search_term);
+          searchParams.append("search_term", params.search_term);
         if (params?.page) searchParams.append("page", params.page.toString());
         if (params?.limit)
-          searchParams.append("limit", params.limit.toString());
+          searchParams.append("page_size", params.limit.toString());
         const queryString = searchParams.toString();
-        return `/books/list${queryString ? `?${queryString}` : ""}`;
+        return `/books/list-admin${queryString ? `?${queryString}` : ""}`;
       },
     }),
+    getBook: builder.query<TBook, string>({
+      query: (id) => `/books/details/${id}`,
+    }),
+    getBookLanguages: builder.query<
+      {
+        code: string;
+        name: string;
+      }[],
+      void
+    >({
+      query: () => ({
+        url: "/books/languages-lsit",
+        method: "GET",
+      }),
+      // providesTags: [],
+    }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
@@ -160,4 +181,7 @@ export const {
   useGetPrivacyPoliciesQuery,
   useGetContentsQuery,
   useGetBooksQuery,
+  useGetBookQuery,
+  useGetProgramQuery,
+  useGetBookLanguagesQuery,
 } = dashboardApi;

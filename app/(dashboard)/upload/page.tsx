@@ -4,12 +4,12 @@ import { UploadsClient } from "@/components/Dashboard/Upload/UploadsClient";
 
 export default function UploadPage() {
   return (
-    <div>
+    <div className="min-h-[calc(100vh-96px)] ">
       <DashboardHeader
         title="All Uploads"
         description="Manage uploaded books and content for the Walking Witness platform."
       />
-      <div className="p-4 md:p-8 w-full mx-auto">
+      <div className="p-4 md:p-8 w-full mx-auto h-full">
         <UploadsClient />
       </div>
     </div>

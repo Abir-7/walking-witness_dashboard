@@ -1,16 +1,13 @@
 "use client";
-
-import { useForm, Controller } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
+import { useGetProgramQuery } from "@/lib/redux/api/dashboardApi";
+import { useUpdateProgramMutation } from "@/lib/redux/api/dashboardWriteApi";
+import { toast } from "sonner";
 
 type FormValues = {
   title: string;
@@ -19,11 +16,24 @@ type FormValues = {
   info: string;
 };
 
-const UploadContent = () => {
+const UploadContent = ({ contentId }: { contentId: string }) => {
+  console.log(contentId);
+  const [updateProgram, { isLoading: isUpdating, error }] =
+    useUpdateProgramMutation();
+  console.log(error);
+  const {
+    data: program,
+    isLoading,
+    isError,
+  } = useGetProgramQuery(contentId!, {
+    skip: !contentId,
+  });
+
   const {
     handleSubmit,
     register,
-    control,
+
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     defaultValues: {
@@ -34,14 +44,35 @@ const UploadContent = () => {
     },
   });
 
-  /*************  ✨ Windsurf Command ⭐  *************/
-  /**
-   * Logs the submitted form data to the console
-   * @param {FormValues} data - The form data
-   */
-  /*******  07991238-f49c-4402-b389-a5387fc0a41d  *******/
-  const onSubmit = (data: FormValues) => {
-    console.log("Submitted Data:", data);
+  // ✅ Populate form when program data is available
+  useEffect(() => {
+    if (program) {
+      reset({
+        title: program.title || "",
+        description: program.description || "",
+        type: program.type || "",
+        info: program.information || "",
+      });
+    }
+  }, [program, reset]);
+
+  const onSubmit = async (data: FormValues) => {
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("information", data.info); // backend expects "information"
+    formData.append("description", data.description);
+
+    try {
+      const res = await updateProgram({
+        id: contentId,
+        data: formData,
+      }).unwrap();
+      toast.success("Content updated successfully");
+      console.log("Update success:", res);
+    } catch (err) {
+      toast.error("Failed to update content");
+      console.error("Update error:", err);
+    }
   };
 
   return (
@@ -62,7 +93,7 @@ const UploadContent = () => {
           )}
         </div>
 
-        <div className="grid gap-2">
+        {/* <div className="grid gap-2">
           <label className="font-medium">Type</label>
           <Controller
             control={control}
@@ -84,16 +115,18 @@ const UploadContent = () => {
           {errors.type && (
             <p className="text-sm text-red-500">{errors.type.message}</p>
           )}
-        </div>
+        </div> */}
       </div>
+
+      {/* Info */}
       <div className="grid gap-2">
         <label className="font-medium">Information</label>
         <Input
-          placeholder="Enter title"
-          {...register("info", { required: "Title is required" })}
+          placeholder="Enter information"
+          {...register("info", { required: "Information is required" })}
         />
-        {errors.title && (
-          <p className="text-sm text-red-500">{errors.title.message}</p>
+        {errors.info && (
+          <p className="text-sm text-red-500">{errors.info.message}</p>
         )}
       </div>
 
@@ -110,8 +143,6 @@ const UploadContent = () => {
           <p className="text-sm text-red-500">{errors.description.message}</p>
         )}
       </div>
-
-      {/* Type */}
 
       {/* Submit */}
       <Button className="bg-red-500" type="submit">

@@ -556,30 +556,32 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
               {/* User Profile */}
               <div className="mt-4 pt-4 border-t border-[#E7EAED]">
                 <div className="flex items-center gap-3 px-3">
-                  <Link
+                  {/* <Link
                     href="/profile"
                     className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+                  > */}
+                  <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+                    <span className="text-pink-600 font-semibold text-sm">
+                      OR
+                    </span>
+                  </div>
+                  <motion.div
+                    animate={{
+                      display: open ? "block" : "none",
+                      opacity: open ? 1 : 0,
+                    }}
+                    className="flex-1 min-w-0"
                   >
-                    <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
-                      <span className="text-pink-600 font-semibold text-sm">
-                        OR
-                      </span>
-                    </div>
-                    <motion.div
-                      animate={{
-                        display: open ? "block" : "none",
-                        opacity: open ? 1 : 0,
-                      }}
-                      className="flex-1 min-w-0"
-                    >
-                      <p className="text-sm font-medium text-primary dark:text-white truncate">
+                    <Link href="/user_profile">
+                      <p className="text-sm hover:underline font-medium text-primary dark:text-white truncate">
                         {user?.user_name}
                       </p>
-                      <p className="text-xs text-secondary dark:text-gray-400 truncate">
-                        {user?.user_role}
-                      </p>
-                    </motion.div>
-                  </Link>
+                    </Link>
+                    <p className="text-xs text-secondary dark:text-gray-400 truncate">
+                      {user?.user_role}
+                    </p>
+                  </motion.div>
+                  {/* //</Link> */}
                   <motion.button
                     onClick={handleLogoutClick}
                     animate={{

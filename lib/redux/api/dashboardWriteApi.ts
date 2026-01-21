@@ -1,6 +1,12 @@
+import { use } from "react";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "./baseApi";
 import { TProject } from "@/types/redux/project";
+interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+  confirm_password: string;
+}
 
 export const dashboardWriteApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -41,6 +47,42 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["PrivacyPolicy"],
     }),
+    // boook
+    uploadBook: builder.mutation({
+      query: (formData: FormData) => ({
+        url: "/books/upload",
+        method: "POST",
+        body: formData, // send FormData directly
+      }),
+    }),
+    // content
+    updateProgram: builder.mutation<any, { id: string; data: FormData }>({
+      query: ({ id, data }) => ({
+        url: `/dashboard/program-details/${id}`,
+        method: "PUT", // or POST depending on backend
+        body: data, // send FormData directly
+      }),
+      invalidatesTags: ["Programs"],
+    }),
+    // User
+    updatePersonalInfo: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: "/settings/personal-info/me",
+        method: "PUT",
+        body: formData, // FormData passed directly
+      }),
+      invalidatesTags: ["User"], // ensures getMe refetches
+    }),
+    changePassword: builder.mutation<any, ChangePasswordPayload>({
+      query: (body) => ({
+        url: "/auth/change-password",
+        method: "POST",
+        body, // JSON body
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -50,4 +92,8 @@ export const {
   useCreateProjectMutation,
   useUpdatePrivacyPoliciesMutation,
   useDeletePrivacyPolicyMutation,
+  useUploadBookMutation,
+  useUpdateProgramMutation,
+  useUpdatePersonalInfoMutation,
+  useChangePasswordMutation,
 } = dashboardWriteApi;

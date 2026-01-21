@@ -12,6 +12,7 @@ import { useState } from "react";
 import { LatestUser } from "@/types/redux/dashboard_over-view";
 import { useDeleteUserMutation } from "@/lib/redux/api/dashboardApi";
 import UserDetailsModal from "@/components/UserDetails/UserDetailsModal";
+import { baseUrl } from "@/config/evn";
 
 interface UsersTableProps {
   isLoading?: boolean;
@@ -108,11 +109,12 @@ export function UsersTable({ isLoading = false, data }: UsersTableProps) {
                       <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-600 overflow-hidden">
                         {user.avatar ? (
                           <Image
-                            src={user.avatar}
+                            src={`${baseUrl}${user.avatar}`}
                             alt={user.full_name}
                             width={32}
                             height={32}
                             className="rounded-full object-cover"
+                            unoptimized
                           />
                         ) : (
                           getInitials(user.full_name)

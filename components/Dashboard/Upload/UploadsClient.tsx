@@ -1,19 +1,21 @@
-/* eslint-disable react-hooks/preserve-manual-memoization */
+/*******************************
+ * UploadsClient.tsx
+ *******************************/
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Search } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
-import { cn } from "@/lib/utils";
-import Image from "next/image";
 import {
   useGetBooksQuery,
   useGetContentsQuery,
 } from "@/lib/redux/api/dashboardApi";
+import CPagination from "../CPagination";
 
 /* ------------------ Types ------------------ */
 
@@ -42,20 +44,18 @@ export interface TBook {
 
 export function UploadsClient() {
   const router = useRouter();
+
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
 
-  const page = 1;
-  const limit = 10;
+  const limit = 6;
 
-  // Fetch content with search, page, limit
   const { data: contentsData, isLoading: isContentLoading } =
-    useGetContentsQuery({
-      search_term: search,
-      page,
-      limit,
-    });
+    useGetContentsQuery(
+      { search_term: search, page, limit },
+      { refetchOnMountOrArgChange: true },
+    );
 
-  // Fetch books with search, page, limit
   const { data: booksData, isLoading: isBookLoading } = useGetBooksQuery({
     search_term: search,
     page,
@@ -63,8 +63,8 @@ export function UploadsClient() {
   });
 
   return (
-    <div className="rounded-lg border bg-background">
-      {/* Header */}
+    <div className="h-[calc(100vh-120px)] flex flex-col rounded-lg border bg-background">
+      {/* ---------- Header ---------- */}
       <div className="p-4 border-b flex items-center justify-between">
         <h2 className="text-lg font-semibold">Uploads</h2>
         <Button
@@ -75,47 +75,80 @@ export function UploadsClient() {
         </Button>
       </div>
 
-      {/* Search */}
+      {/* ---------- Search ---------- */}
       <div className="p-4 border-b">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search uploads..."
             className="h-10 w-full pl-9 pr-4 text-sm border rounded-md bg-background"
           />
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="books" className="p-4">
+      {/* ---------- Tabs ---------- */}
+      <Tabs defaultValue="books" className="flex-1 flex flex-col p-4">
         <TabsList>
-          <TabsTrigger value="books">Books</TabsTrigger>
+          <TabsTrigger
+            value="books"
+            onClick={() => {
+              setPage(1);
+              setSearch("");
+            }}
+          >
+            Books
+          </TabsTrigger>
           <TabsTrigger value="content">Content</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="books">
-          <BooksTable
-            data={booksData?.data || []}
-            isLoading={isBookLoading}
-            onRowClick={(id) => router.push(`/upload/${id}`)}
-          />
+        {/* ---------- BOOKS TAB ---------- */}
+        <TabsContent value="books" className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-auto">
+            <BooksTable
+              data={booksData?.data || []}
+              isLoading={isBookLoading}
+              onRowClick={(id) => router.push(`/upload/book/${id}`)}
+            />
+          </div>
+
+          <div className="border-t pt-3">
+            <CPagination
+              page={page}
+              totalPages={booksData?.total_pages || 0}
+              onPageChange={setPage}
+            />
+          </div>
         </TabsContent>
 
-        <TabsContent value="content">
-          <ContentTable
-            data={contentsData || []}
-            isLoading={isContentLoading}
-            onRowClick={(id) => router.push(`/upload/${id}`)}
-          />
+        {/* ---------- CONTENT TAB ---------- */}
+        <TabsContent value="content" className="flex-1 flex flex-col">
+          <div className="flex-1 overflow-auto">
+            <ContentTable
+              data={contentsData?.data || []}
+              isLoading={isContentLoading}
+              onRowClick={(id) => router.push(`/upload/content/${id}`)}
+            />
+          </div>
+
+          <div className="border-t pt-3">
+            <CPagination
+              page={page}
+              totalPages={contentsData?.total_pages || 0}
+              onPageChange={setPage}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
   );
 }
 
-/* ------------------ Table Components ------------------ */
+/* ------------------ Tables ------------------ */
 
 function ContentTable({
   data,
@@ -150,14 +183,14 @@ function ContentTable({
               <tr
                 key={item.id}
                 onClick={() => onRowClick(item.id)}
-                className="hover:bg-muted cursor-pointer transition"
+                className="hover:bg-muted cursor-pointer"
               >
                 <td className="p-5">
                   <Image
-                    width={100}
-                    height={100}
                     src={item.image}
                     alt={item.title}
+                    width={48}
+                    height={48}
                     className="h-12 w-12 rounded-md object-cover border"
                     unoptimized
                   />
@@ -170,25 +203,13 @@ function ContentTable({
                   </div>
                 </td>
 
-                <td className="p-5">
-                  <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium">
-                    {item.type}
-                  </span>
+                <td className="p-5">{item.type}</td>
+
+                <td className="p-5 text-xs">
+                  {item.allow_project ? "Allowed" : "Disabled"}
                 </td>
 
-                <td className="p-5">
-                  {item.allow_project ? (
-                    <span className="text-green-600 font-medium text-xs">
-                      Allowed
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">
-                      Disabled
-                    </span>
-                  )}
-                </td>
-
-                <td className="p-5 text-muted-foreground text-xs">
+                <td className="p-5 text-xs">
                   {new Date(item.created_at).toLocaleDateString()}
                 </td>
 
@@ -248,14 +269,14 @@ function BooksTable({
               <tr
                 key={book.id}
                 onClick={() => onRowClick(book.id)}
-                className="hover:bg-muted cursor-pointer transition"
+                className="hover:bg-muted cursor-pointer"
               >
                 <td className="p-5">
                   <Image
-                    width={100}
-                    height={100}
                     src={book.cover}
                     alt={book.name}
+                    width={40}
+                    height={56}
                     className="h-14 w-10 object-cover rounded border"
                     unoptimized
                   />
@@ -268,7 +289,7 @@ function BooksTable({
                     {book.languages.map((lang) => (
                       <span
                         key={lang}
-                        className="rounded-md bg-secondary px-2 py-0.5 text-xs font-medium"
+                        className="rounded-md bg-secondary px-2 py-0.5 text-xs"
                       >
                         {lang.toUpperCase()}
                       </span>
