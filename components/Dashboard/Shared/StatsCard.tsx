@@ -1,4 +1,3 @@
-import { ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { TradeDownIcon, TradeUpIcon } from "@hugeicons/core-free-icons";
@@ -15,7 +14,7 @@ export function StatsCard({
   label,
   value,
   trend,
-  trendLabel,
+
   className,
 }: StatsCardProps) {
   const isPositive = trend >= 0;
@@ -24,7 +23,7 @@ export function StatsCard({
     <div
       className={cn(
         "bg-gray dark:bg-gray-800 p-6 rounded-md shadow-none border border-[#E9EAEB] dark:border-gray-700 flex flex-col justify-between h-full",
-        className
+        className,
       )}
     >
       <h3 className="text-primary dark:text-gray-400 text-sm font-medium mb-2">
@@ -32,13 +31,14 @@ export function StatsCard({
       </h3>
       <div className="flex items-end justify-between">
         <div className="text-3xl font-bold text-primary dark:text-gray-50">
-          {value}
+          {value}{" "}
+          {(label === "Total Amount" || label === "Total Donations") && "$"}
         </div>
         <div className="flex items-center gap-1 text-xs">
           <span
             className={cn(
               "font-medium",
-              isPositive ? "text-green-500" : "text-secondary"
+              isPositive ? "text-green-500" : "text-secondary",
             )}
           >
             {isPositive ? "+" : ""}

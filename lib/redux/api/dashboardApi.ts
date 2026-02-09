@@ -162,7 +162,7 @@ export const dashboardApi = baseApi.injectEndpoints({
         url: "/books/languages-lsit",
         method: "GET",
       }),
-      // providesTags: [],
+      providesTags: ["BookLanguages"],
     }),
   }),
   overrideExisting: true,

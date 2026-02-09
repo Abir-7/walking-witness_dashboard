@@ -8,6 +8,10 @@ interface ChangePasswordPayload {
   confirm_password: string;
 }
 
+interface AddLanguageRequest {
+  language_name: string;
+}
+
 export const dashboardWriteApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     updateProject: builder.mutation<
@@ -83,6 +87,22 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
         },
       }),
     }),
+    addBookLanguage: builder.mutation<any, AddLanguageRequest>({
+      query: (body) => ({
+        url: "/books/add-language",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["BookLanguages"],
+    }),
+    addCategory: builder.mutation<any, FormData>({
+      query: (formData) => ({
+        url: "/dashboard/categories",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["Categories"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -96,4 +116,6 @@ export const {
   useUpdateProgramMutation,
   useUpdatePersonalInfoMutation,
   useChangePasswordMutation,
+  useAddBookLanguageMutation,
+  useAddCategoryMutation,
 } = dashboardWriteApi;

@@ -147,7 +147,7 @@ export default function UploadBook() {
         </div>
 
         {/* Editions */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6">
           {fields.map((item, index) => (
             <div key={item.id} className="border p-4 rounded-lg space-y-4">
               {/* PDF Upload */}
