@@ -33,29 +33,17 @@ export default function ProjectDetailsDisplay({ projectId }: Props) {
     : `${baseUrl}${project.cover_image}`;
 
   return (
-    <div className="space-y-10 p-6 pb-12">
-      {/* Breadcrumb */}
-      <div className="text-sm text-muted-foreground">
-        Projects <span className="mx-1">/</span>
-        <span className="font-medium text-foreground">Project Details</span>
-      </div>
-
+    <div className="bg-white p-8 rounded-xl shadow-md space-y-8">
       {/* Header */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-2">
-          <h1 className="text-2xl font-semibold">{project.title}</h1>
-          <p className="text-sm text-muted-foreground">
-            Program: {project.program?.name || "-"}
-          </p>
-        </div>
-
-        <Button asChild className="w-fit">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">{project.title}</h1>
+        <Button asChild className="text-red-400">
           <Link href={`/projects/${projectId}/update`}>Edit Project</Link>
         </Button>
       </div>
 
-      {/* Cover Image */}
-      <div className="relative aspect-6/2 overflow-hidden rounded-xl border bg-muted">
+      {/* Cover Image (same style as create page) */}
+      <div className="relative w-full h-48 rounded-lg border overflow-hidden bg-gray-50">
         <Image
           src={coverImage}
           alt="Project Cover"
@@ -65,96 +53,118 @@ export default function ProjectDetailsDisplay({ projectId }: Props) {
         />
       </div>
 
-      {/* Info Boxes */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <InfoBox label="Village" value={project.village} />
-        <InfoBox label="Location" value={project.location} />
-        <InfoBox label="Pastor" value={project.pastor_name} />
-        <InfoBox label="Sponsor" value={project.sponsor_name} />
-        <InfoBox label="Established" value={project.established_date} />
+      {/* Basic Info */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Basic Information
+        </h2>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <ReadOnlyField label="Program" value={project.program?.name} />
+          <ReadOnlyField label="Category" value={project.category?.name} />
+          <ReadOnlyField label="Village" value={project.village} />
+          <ReadOnlyField label="Location" value={project.location} />
+          <ReadOnlyField label="Pastor Name" value={project.pastor_name} />
+          <ReadOnlyField label="Sponsor Name" value={project.sponsor_name} />
+          <ReadOnlyField
+            label="Established Date"
+            value={project.established_date}
+          />
+          <ReadOnlyField
+            label="Total Benefited Families"
+            value={project.total_benefited_families}
+          />
+          <ReadOnlyField label="Impact" value={project.impact} />
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="grid gap-8 lg:grid-cols-2">
-        <Card title="Project Details">{project.project_details}</Card>
+      {/* Text Sections */}
+      <ReadOnlyTextarea
+        label="Project Details"
+        value={project.project_details}
+      />
 
-        <Card title="Category">{project.category?.name}</Card>
+      <ReadOnlyTextarea label="Recent Updates" value={project.recent_updates} />
 
-        <Card title="Stories">{project.project_stories}</Card>
+      <ReadOnlyTextarea
+        label="Project Stories"
+        value={project.project_stories}
+      />
 
-        <Card title="Impact">{project.impact}</Card>
-      </div>
-
-      {/* Lists */}
-      <ListCard
+      {/* Pastor Support Prices */}
+      <ArraySection
         title="Pastor Support Prices"
-        items={project.pastor_support_prices?.map(
-          (p: any) => `${p.amount} ${p.currency}`,
-        )}
+        items={project.pastor_support_prices}
+        render={(p: any) => `${p.amount} ${p.currency}`}
       />
 
-      <ListCard
+      {/* Livestock Items */}
+      <ArraySection
         title="Livestock Items"
-        items={project.livestock_items?.map(
-          (l: any) => `${l.name} × ${l.quantity} — ${l.amount} ${l.currency}`,
-        )}
+        items={project.livestock_items}
+        render={(l: any) =>
+          `${l.name} — ${l.quantity} × ${l.amount} ${l.currency}`
+        }
       />
 
-      <ListCard
+      {/* Other Supports */}
+      <ArraySection
         title="Other Supports"
-        items={project.other_supports?.map(
-          (o: any) => `${o.amount} ${o.currency}`,
-        )}
+        items={project.other_supports}
+        render={(o: any) => `${o.amount} ${o.currency}`}
       />
-
-      <Card title="Recent Updates">
-        {project.recent_updates || "No updates yet"}
-      </Card>
     </div>
   );
 }
-function Card({
+
+/* ===============================
+   Inline helpers (same file)
+================================ */
+
+function ReadOnlyField({ label, value }: { label: string; value?: any }) {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-semibold text-gray-700">{label}</label>
+      <div className="border rounded-lg px-3 py-2 bg-gray-50 text-sm mt-1">
+        {value || "-"}
+      </div>
+    </div>
+  );
+}
+
+function ReadOnlyTextarea({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className="space-y-1">
+      <label className="text-sm font-semibold text-gray-700">{label}</label>
+      <div className="border rounded-lg p-3 bg-gray-50 text-sm whitespace-pre-wrap min-h-20 mt-1">
+        {value || "-"}
+      </div>
+    </div>
+  );
+}
+
+function ArraySection({
   title,
-  children,
+  items,
+  render,
 }: {
   title: string;
-  children?: React.ReactNode;
+  items?: any[];
+  render: (item: any) => string;
 }) {
   return (
-    <div className="rounded-xl border bg-white shadow-sm">
-      <div className="border-b px-4 py-3 text-sm font-medium">{title}</div>
-      <div className="px-4 py-4 text-sm text-muted-foreground whitespace-pre-wrap">
-        {children || "-"}
-      </div>
-    </div>
-  );
-}
+    <div className="space-y-4 rounded-xl border p-5 bg-gray-50">
+      <h3 className="text-base font-semibold text-gray-800">{title}</h3>
 
-function InfoBox({ label, value }: { label: string; value?: string }) {
-  return (
-    <div className="rounded-xl border bg-muted/40 px-4 py-3">
-      <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="mt-1 text-sm font-medium">{value || "-"}</p>
-    </div>
-  );
-}
-
-function ListCard({ title, items }: { title: string; items?: string[] }) {
-  return (
-    <div className="rounded-xl border bg-white shadow-sm">
-      <div className="border-b px-4 py-3 text-sm font-medium">{title}</div>
-      <ul className="space-y-2 px-4 py-4 text-sm text-muted-foreground">
-        {items?.length ? (
-          items.map((item, idx) => (
-            <li key={idx} className="flex gap-2">
-              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-primary" />
-              <span>{item}</span>
-            </li>
-          ))
-        ) : (
-          <li className="italic text-muted-foreground">No data available</li>
-        )}
-      </ul>
+      {items?.length ? (
+        items.map((item, idx) => (
+          <div key={idx} className="rounded-lg border bg-white p-3 text-sm">
+            {render(item)}
+          </div>
+        ))
+      ) : (
+        <p className="text-sm text-gray-400">No data available</p>
+      )}
     </div>
   );
 }

@@ -1,12 +1,13 @@
 // app/upload/book/[id]/page.tsx
 "use client";
 
-import React from "react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useGetBookQuery } from "@/lib/redux/api/dashboardApi";
-import { Book } from "lucide-react"; // optional icon
+
 import DashboardHeader from "@/components/Dashboard/Shared/DashboardHeader";
+import PdfItem from "./PdfItem";
+import AddPdfModal from "./add_new_book";
 
 export interface TBook {
   id: number;
@@ -67,9 +68,12 @@ const BookDetailsPage: React.FC = () => {
             {/* Languages */}
             {book.languages?.length > 0 && (
               <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
-                <h3 className="text-lg font-semibold mb-2 text-gray-700">
-                  Available Languages
-                </h3>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold mb-2 text-gray-700">
+                    Available Languages
+                  </h3>
+                  <AddPdfModal bookId={book.id}></AddPdfModal>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {book.languages.map((lang) => (
                     <span
@@ -82,7 +86,6 @@ const BookDetailsPage: React.FC = () => {
                 </div>
               </div>
             )}
-
             {/* PDFs */}
             <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
               <h3 className="text-lg font-semibold mb-3 text-gray-700">
@@ -94,16 +97,12 @@ const BookDetailsPage: React.FC = () => {
               ) : (
                 <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
                   {pdfEntries.map(([lang, url]) => (
-                    <a
+                    <PdfItem
                       key={lang}
-                      href={url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-red-400 text-white font-medium hover:bg-black transition"
-                    >
-                      <Book className="h-4 w-4" />
-                      {lang.toUpperCase()} PDF
-                    </a>
+                      lang={lang}
+                      url={url as string}
+                      bookId={book.id}
+                    />
                   ))}
                 </div>
               )}

@@ -22,5 +22,6 @@ export const baseApi = createApi({
     "PrivacyPolicy",
     "User",
     "BookLanguages",
+    "Books",
   ],
 });

@@ -103,6 +103,27 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Categories"],
     }),
+    removeBookLanguage: builder.mutation<
+      any,
+      { bookId: number | string; lang: string }
+    >({
+      query: ({ bookId, lang }) => ({
+        url: `/books/language/${bookId}?lang=${lang}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Books"],
+    }),
+    addBookPdf: builder.mutation<
+      any,
+      { bookId: number | string; data: FormData }
+    >({
+      query: ({ bookId, data }) => ({
+        url: `/books/details/${bookId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Books"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -118,4 +139,6 @@ export const {
   useChangePasswordMutation,
   useAddBookLanguageMutation,
   useAddCategoryMutation,
+  useRemoveBookLanguageMutation,
+  useAddBookPdfMutation,
 } = dashboardWriteApi;

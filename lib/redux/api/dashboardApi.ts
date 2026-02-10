@@ -150,6 +150,7 @@ export const dashboardApi = baseApi.injectEndpoints({
     }),
     getBook: builder.query<TBook, string>({
       query: (id) => `/books/details/${id}`,
+      providesTags: ["Books"],
     }),
     getBookLanguages: builder.query<
       {
