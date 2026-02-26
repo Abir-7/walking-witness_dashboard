@@ -1,12 +1,14 @@
-/* eslint-disable react-hooks/incompatible-library */
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { useGetCategoriesQuery } from "@/lib/redux/api/dashboardApi";
 import { useAddCategoryMutation } from "@/lib/redux/api/dashboardWriteApi";
+import { useSoftDeleteCategoryMutation } from "@/lib/redux/api/dashboardWriteApi"; // your soft delete hook
 import Image from "next/image";
-import { Upload } from "lucide-react";
+import { Upload, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type FormValues = {
   name: string;
@@ -21,6 +23,8 @@ interface Category {
 
 const UploadCategory = () => {
   const [addCategory, { isLoading: isAdding }] = useAddCategoryMutation();
+  const [softDeleteCategory, { isLoading: isDeleting }] =
+    useSoftDeleteCategoryMutation();
 
   const {
     register,
@@ -29,16 +33,17 @@ const UploadCategory = () => {
     formState: { errors },
     reset,
   } = useForm<FormValues>();
-
   const selectedImage = watch("image");
 
   const { data: categories, isLoading, isError } = useGetCategoriesQuery();
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedCat, setSelectedCat] = useState<Category | null>(null);
 
   const onSubmit = async (data: FormValues) => {
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("image", data.image[0]);
-
     try {
       await addCategory(formData).unwrap();
       reset();
@@ -51,6 +56,25 @@ const UploadCategory = () => {
     selectedImage && selectedImage.length > 0
       ? URL.createObjectURL(selectedImage[0])
       : null;
+
+  const confirmDelete = (category: Category) => {
+    setSelectedCat(category);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!selectedCat) return;
+    try {
+      console.log(selectedCat.id);
+      const res = await softDeleteCategory(selectedCat.id);
+      console.log(res);
+      setModalOpen(false);
+      setSelectedCat(null);
+    } catch (err) {
+      console.error("Delete failed", err);
+      toast.error("Failed to delete category");
+    }
+  };
 
   return (
     <div className="border p-4 rounded-lg space-y-4">
@@ -80,25 +104,19 @@ const UploadCategory = () => {
             )}
           </label>
 
-          {/* Hidden File Input */}
           <input
             id="image"
             type="file"
             accept="image/*"
             className="hidden"
-            {...register("image", {
-              required: "Image is required",
-            })}
+            {...register("image", { required: "Image is required" })}
           />
 
-          {/* Category Name */}
           <input
             type="text"
             placeholder="Category name"
             className="flex-1 border p-2 rounded"
-            {...register("name", {
-              required: "Category name is required",
-            })}
+            {...register("name", { required: "Category name is required" })}
           />
 
           <Button className="bg-red-400" type="submit" disabled={isAdding}>
@@ -130,21 +148,62 @@ const UploadCategory = () => {
           {categories?.map((cat: Category) => (
             <li
               key={cat.id}
-              className="flex items-center gap-3 border p-2 rounded"
+              className="flex items-center justify-between gap-3 border p-2 rounded"
             >
-              <Image
-                src={cat.image}
-                alt={cat.name}
-                width={40}
-                height={40}
-                className="rounded object-cover"
-                unoptimized
-              />
-              <span>{cat.name}</span>
+              <div className="flex items-center gap-3">
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  width={40}
+                  height={40}
+                  className="rounded object-cover"
+                  unoptimized
+                />
+                <span>{cat.name}</span>
+              </div>
+
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => confirmDelete(cat)}
+                disabled={isDeleting}
+              >
+                <Trash2 size={16} />
+              </Button>
             </li>
           ))}
         </ul>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {modalOpen && selectedCat && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+          <div className="bg-white p-6 rounded-lg w-80 space-y-4">
+            <h3 className="font-semibold text-lg">Confirm Delete</h3>
+            <p>
+              Are you sure you want to delete{" "}
+              <span className="font-bold">{selectedCat.name}</span>?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setModalOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -124,6 +124,20 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Books"],
     }),
+    softDeleteCategory: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/dashboard/categories/soft-delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Categories"],
+    }),
+    softDeleteLanguage: builder.mutation<void, number>({
+      query: (id) => ({
+        url: `/books/languages/soft-delete/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["BookLanguages"], // refreshes language list after deletion
+    }),
   }),
   overrideExisting: false,
 });
@@ -141,4 +155,6 @@ export const {
   useAddCategoryMutation,
   useRemoveBookLanguageMutation,
   useAddBookPdfMutation,
+  useSoftDeleteCategoryMutation,
+  useSoftDeleteLanguageMutation,
 } = dashboardWriteApi;

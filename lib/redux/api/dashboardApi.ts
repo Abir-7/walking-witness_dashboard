@@ -153,10 +153,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       providesTags: ["Books"],
     }),
     getBookLanguages: builder.query<
-      {
-        code: string;
-        name: string;
-      }[],
+      { id: number; code: string; name: string }[],
       void
     >({
       query: () => ({
