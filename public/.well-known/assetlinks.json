@@ -1,0 +1,17 @@
+[{
+ 
+ "relation": ["delegate_permission/common.handle_all_urls"],
+ 
+ "target": {
+ 
+   "namespace": "android_app",
+ 
+   "package_name": "com.bridgesofglory.app",
+ 
+   "sha256_cert_fingerprints":
+ 
+   ["1C:8E:C0:74:78:80:60:45:57:F7:07:6D:80:04:06:DF:D3:98:60:AB:55:BF:68:0D:DE:5F:66:64:E2:A6:0C:65"]
+ 
+ }
+ 
+}]

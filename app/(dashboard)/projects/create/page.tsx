@@ -12,6 +12,7 @@ import {
 import { useCreateProjectMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { baseUrl } from "@/config/evn";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type ProjectFormData = {
   cover_image: FileList | null;
@@ -72,6 +73,19 @@ export default function ProjectCreateForm() {
       },
     });
 
+  const hasDuplicatePrice = (items: { amount: string; currency: string }[]) => {
+    const seen = new Set();
+
+    for (const item of items) {
+      const key = `${item.amount}-${item.currency}`;
+      if (seen.has(key)) {
+        return true;
+      }
+      seen.add(key);
+    }
+
+    return false;
+  };
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setCoverPreview(file ? URL.createObjectURL(file) : null);
@@ -80,6 +94,26 @@ export default function ProjectCreateForm() {
 
   const onSubmit = async (data: ProjectFormData) => {
     console.log(data);
+    if (hasDuplicatePrice(data.pastor_support_prices)) {
+      toast.error("Pastor support prices cannot have duplicate amounts");
+      return;
+    }
+
+    if (hasDuplicatePrice(data.other_supports)) {
+      toast.error("Other support prices cannot have duplicate amounts");
+      return;
+    }
+
+    const livestockPriceCheck = data.livestock_items.map((i) => ({
+      amount: i.amount,
+      currency: i.currency,
+    }));
+
+    if (hasDuplicatePrice(livestockPriceCheck)) {
+      toast.error("Livestock prices cannot have duplicate amounts");
+      return;
+    }
+
     try {
       const formData = new FormData();
 
@@ -108,12 +142,12 @@ export default function ProjectCreateForm() {
       });
 
       await createProject({ body: formData }).unwrap();
-      alert("Project created successfully");
+      toast.success("Project created successfully");
       reset(); // reset form
       setCoverPreview(null);
     } catch (err: any) {
       console.error("Create failed", err);
-      alert(err.data?.message || "Create failed");
+      toast.error("Failed to create project");
     }
   };
 
