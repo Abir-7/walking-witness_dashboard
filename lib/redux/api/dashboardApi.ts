@@ -104,10 +104,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       providesTags: ["Categories"],
     }),
     // privecy api
-    getPrivacyPolicies: builder.query<
-      { title: string; description: string }[],
-      void
-    >({
+    getPrivacyPolicies: builder.query<{ privacy: string; id: number }, void>({
       query: () => "/settings/admin/privacy-policy",
       providesTags: ["PrivacyPolicy"],
     }),
