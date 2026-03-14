@@ -48,18 +48,11 @@ export default function PrivacyPolicyPage() {
     );
 
   return (
-    <div className="border rounded-lg p-6 relative bg-white dark:bg-gray-800 shadow-sm max-w-3xl mx-auto">
+    <div className="border rounded-lg my-10 p-6 relative bg-white dark:bg-gray-800 shadow-sm max-w-3xl mx-auto">
+      <h1 className="text-3xl py-3 text-center font-bold">
+        Our Privacy and Policy
+      </h1>
       {/* Delete button */}
-      {policy.id && (
-        <button
-          onClick={handleDelete}
-          className="absolute top-4 right-4 text-red-500 hover:text-red-600"
-          title="Delete Privacy Policy"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      )}
-
       {/* Render privacy HTML */}
       <div
         className="prose dark:prose-invert"
