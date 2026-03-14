@@ -32,10 +32,7 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
         body,
       }),
     }),
-    updatePrivacyPolicies: builder.mutation<
-      any,
-      { title: string; description: string }[]
-    >({
+    updatePrivacyPolicies: builder.mutation<any, { privecy: string }>({
       query: (policies) => ({
         url: "/settings/admin/privacy-policy",
         method: "POST",

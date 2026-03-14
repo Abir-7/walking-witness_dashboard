@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
 
       <div className="p-4">
         <div className="flex w-full  flex-col gap-6">
-          <Tabs defaultValue="account">
+          <Tabs defaultValue="password">
             <TabsList>
               <TabsTrigger value="account">All Privacy</TabsTrigger>
               <TabsTrigger value="password">Add New</TabsTrigger>
