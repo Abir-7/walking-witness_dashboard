@@ -48,7 +48,7 @@ export default function PrivacyPolicyPage() {
     );
 
   return (
-    <div className="border rounded-lg my-10 p-6 relative bg-white dark:bg-gray-800 shadow-sm max-w-3xl mx-auto">
+    <div className="border rounded-lg my-10 p-6 relative bg-white dark:bg-gray-800 shadow-sm max-w-4xl mx-auto">
       <h1 className="text-3xl py-3 text-center font-bold">
         Our Privacy and Policy
       </h1>
