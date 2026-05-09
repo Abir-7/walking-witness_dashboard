@@ -15,11 +15,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DeleteConfirmationModal } from "../Shared/DeleteConfirmationModal";
 import { toast } from "sonner";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 
 export function ProjectsClient() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const page = Number(searchParams.get("page")) || 1;
 
   // Delete state
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -27,11 +32,19 @@ export function ProjectsClient() {
 
   const [deleteProject, { isLoading: isDeleting }] = useDeleteProjectMutation();
 
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   // debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setPage(1); // reset page on new search
+      if (searchQuery !== debouncedSearch) {
+        handlePageChange(1); // reset page on new search
+      }
     }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -40,7 +53,7 @@ export function ProjectsClient() {
   const { data, isLoading, isError } = useGetProjectsQuery({
     search_term: debouncedSearch,
     page,
-    page_size: 10,
+    page_size: 5,
   });
 
   const currentData: TProject[] = data?.results || [];
@@ -193,10 +206,9 @@ export function ProjectsClient() {
         <CPagination
           page={page}
           totalPages={data?.total_pages || 1}
-          onPageChange={(newPage) => setPage(newPage)}
+          onPageChange={handlePageChange}
         />
       </div>
-
       <DeleteConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

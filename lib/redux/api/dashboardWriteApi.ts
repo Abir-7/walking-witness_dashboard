@@ -38,6 +38,7 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Projects"],
     }),
     updatePrivacyPolicies: builder.mutation<any, { privacy: string }>({
       query: (policies) => ({

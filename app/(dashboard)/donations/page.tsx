@@ -6,16 +6,32 @@ import { Search } from "lucide-react";
 import { DonationsTable } from "@/components/Dashboard/Donations/DonationsTable";
 import CPagination from "@/components/Dashboard/CPagination";
 import { useState, useEffect } from "react";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 
 export default function DonationsPage() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const currentPage = Number(searchParams.get("page")) || 1;
   const pageSize = 7;
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   // Debounce search input
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(searchQuery), 500);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      if (searchQuery !== debouncedSearch) {
+         handlePageChange(1);
+      }
+    }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -67,7 +83,6 @@ export default function DonationsPage() {
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setCurrentPage(1); // reset page when searching
                 }}
                 className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white text-primary placeholder-gray-500"
               />
@@ -81,11 +96,12 @@ export default function DonationsPage() {
         {/* Pagination */}
         <div className="mt-4">
           <CPagination
-            page={data?.pagination.page || 1}
+            page={currentPage}
             totalPages={data?.pagination.total_pages || 1}
-            onPageChange={(page) => setCurrentPage(page)}
+            onPageChange={handlePageChange}
           />
         </div>
+
       </div>
     </div>
   );

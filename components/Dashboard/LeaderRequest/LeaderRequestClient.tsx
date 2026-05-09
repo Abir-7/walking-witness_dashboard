@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { Pagination } from "@/components/Dashboard/Shared/Pagination";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,12 +26,21 @@ export function LeaderRequestClient({
   onApproveAll,
   onDeclineAll,
 }: LeaderRequestClientProps) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const currentPage = Number(searchParams.get("page")) || 1;
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [requests, setRequests] = useState<RequestWithStatus[]>([]);
   const itemsPerPage = 7;
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   // Confirmation state
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -199,7 +208,10 @@ export function LeaderRequestClient({
               type="text"
               placeholder="Search"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                handlePageChange(1);
+              }}
               className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white text-primary  placeholder-gray-500"
             />
           </div>
@@ -314,7 +326,7 @@ export function LeaderRequestClient({
         <Pagination
           currentPage={currentPage}
           totalPages={isLoading ? 1 : totalPages}
-          onPageChange={setCurrentPage}
+          onPageChange={handlePageChange}
           className="border-t border-gray-200"
         />
       </div>

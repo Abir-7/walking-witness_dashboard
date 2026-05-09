@@ -4,7 +4,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import Image from "next/image";
 import { Search } from "lucide-react";
 
@@ -43,10 +43,18 @@ export interface TBook {
 /* ------------------ Component ------------------ */
 
 export function UploadsClient() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
   const router = useRouter();
 
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const page = Number(searchParams.get("page")) || 1;
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   const limit = 6;
 
@@ -83,7 +91,7 @@ export function UploadsClient() {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
-              setPage(1);
+              handlePageChange(1);
             }}
             placeholder="Search uploads..."
             className="h-10 w-full pl-9 pr-4 text-sm border rounded-md bg-background"
@@ -97,7 +105,7 @@ export function UploadsClient() {
           <TabsTrigger
             value="books"
             onClick={() => {
-              setPage(1);
+              handlePageChange(1);
               setSearch("");
             }}
           >
@@ -120,7 +128,7 @@ export function UploadsClient() {
             <CPagination
               page={page}
               totalPages={booksData?.total_pages || 0}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
             />
           </div>
         </TabsContent>
@@ -139,7 +147,7 @@ export function UploadsClient() {
             <CPagination
               page={page}
               totalPages={contentsData?.total_pages || 0}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
             />
           </div>
         </TabsContent>

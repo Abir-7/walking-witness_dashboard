@@ -6,12 +6,15 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useGetProjectDetailsQuery } from "@/lib/redux/api/dashboardApi";
 import { baseUrl } from "@/config/evn";
+import { useRouter } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 
 type Props = {
   projectId: number;
 };
 
 export default function ProjectDetailsDisplay({ projectId }: Props) {
+  const router = useRouter();
   const {
     data: project,
     isLoading,
@@ -34,6 +37,17 @@ export default function ProjectDetailsDisplay({ projectId }: Props) {
 
   return (
     <div className="bg-white p-8 rounded-xl shadow-md space-y-8">
+      {/* Back Button */}
+      <div className="flex items-center gap-2 text-sm text-secondary mb-4">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Back to Projects</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{project.title}</h1>

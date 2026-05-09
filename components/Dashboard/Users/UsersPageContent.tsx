@@ -7,18 +7,31 @@ import DashboardHeader from "../Shared/DashboardHeader";
 import { useState, useEffect } from "react";
 import { useGetAllUsersQuery } from "@/lib/redux/api/dashboardApi";
 import CPagination from "../CPagination";
+import { useSearchParams, usePathname, useRouter } from "next/navigation";
 
 export function UsersPageContent() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(1);
+  const page = Number(searchParams.get("page")) || 1;
   const page_size = 8;
+
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", newPage.toString());
+    router.push(`${pathname}?${params.toString()}`);
+  };
 
   // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setPage(1); // reset page on new search
+      if (searchQuery !== debouncedSearch) {
+        handlePageChange(1); // reset page on new search
+      }
     }, 500);
 
     return () => clearTimeout(timer);
@@ -67,7 +80,7 @@ export function UsersPageContent() {
           <CPagination
             page={page}
             totalPages={totalPages}
-            onPageChange={setPage}
+            onPageChange={handlePageChange}
           />
         </div>
       </div>

@@ -2,13 +2,14 @@
 "use client";
 
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useGetBookQuery } from "@/lib/redux/api/dashboardApi";
 
 import DashboardHeader from "@/components/Dashboard/Shared/DashboardHeader";
 import PdfItem from "./PdfItem";
 import AddPdfModal from "./add_new_book";
 import EditBookModal from "./edit_book_modal";
+import { ChevronLeft } from "lucide-react";
 
 export interface TBook {
   id: number;
@@ -19,6 +20,7 @@ export interface TBook {
 }
 
 const BookDetailsPage: React.FC = () => {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
@@ -47,6 +49,17 @@ const BookDetailsPage: React.FC = () => {
       />
 
       <div className="container mx-auto px-4 max-w-6xl">
+        {/* Back Button */}
+        <div className="flex items-center gap-2 text-sm text-secondary mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Back to Uploads</span>
+          </button>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-8">
           {/* Cover */}
           <div className="relative h-96 rounded-xl overflow-hidden  bg-white border">

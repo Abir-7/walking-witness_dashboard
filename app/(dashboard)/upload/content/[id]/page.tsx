@@ -3,11 +3,12 @@
 
 import React from "react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import DashboardHeader from "@/components/Dashboard/Shared/DashboardHeader";
 import { useGetProgramQuery } from "@/lib/redux/api/dashboardApi";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 
 export interface TContent {
   id: number;
@@ -23,6 +24,7 @@ export interface TContent {
 }
 
 const ProgramDetailsPage: React.FC = () => {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
@@ -48,6 +50,17 @@ const ProgramDetailsPage: React.FC = () => {
       />
 
       <div className="container mx-auto px-4 ">
+        {/* Back Button */}
+        <div className="flex items-center gap-2 text-sm text-secondary mb-6">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Back to Uploads</span>
+          </button>
+        </div>
+
         <div className="grid md:grid-cols-3  gap-10">
           {/* Image Card */}
           <div className="relative w-full h-full mx-auto  overflow-hidden  max-w-96 max-h-96  bg-white ">
