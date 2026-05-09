@@ -19,7 +19,6 @@ type ProjectFormData = {
   title: string;
   program: string;
   category: string;
-  village: string;
   location: string;
   pastor_name: string;
   sponsor_name: string;
@@ -28,7 +27,6 @@ type ProjectFormData = {
   recent_updates: string;
   project_stories: string;
   total_benefited_families: number;
-  impact: string;
   pastor_support_prices: { amount: string; currency: string }[];
   livestock_items: {
     name: string;
@@ -55,7 +53,6 @@ export default function ProjectCreateForm() {
         title: "",
         program: "",
         category: "",
-        village: "",
         location: "",
         pastor_name: "",
         sponsor_name: "",
@@ -64,7 +61,6 @@ export default function ProjectCreateForm() {
         recent_updates: "",
         project_stories: "",
         total_benefited_families: 0,
-        impact: "",
         pastor_support_prices: [{ amount: "", currency: "USD" }],
         livestock_items: [
           { name: "", amount: "", quantity: "", currency: "USD" },
@@ -238,7 +234,6 @@ export default function ProjectCreateForm() {
             ))}
           </select>
         </div>
-        <Input label="Village" {...register("village")} />
         <Input label="Location" {...register("location")} />
         <Input label="Pastor Name" {...register("pastor_name")} />
         <Input label="Sponsor Name" {...register("sponsor_name")} />
@@ -252,7 +247,6 @@ export default function ProjectCreateForm() {
           type="number"
           {...register("total_benefited_families")}
         />
-        <Input label="Impact" {...register("impact")} />
       </div>
 
       {/* Textareas */}

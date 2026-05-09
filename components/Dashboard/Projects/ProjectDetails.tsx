@@ -62,7 +62,6 @@ export default function ProjectDetailsDisplay({ projectId }: Props) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <ReadOnlyField label="Program" value={project.program?.name} />
           <ReadOnlyField label="Category" value={project.category?.name} />
-          <ReadOnlyField label="Village" value={project.village} />
           <ReadOnlyField label="Location" value={project.location} />
           <ReadOnlyField label="Pastor Name" value={project.pastor_name} />
           <ReadOnlyField label="Sponsor Name" value={project.sponsor_name} />
@@ -74,7 +73,6 @@ export default function ProjectDetailsDisplay({ projectId }: Props) {
             label="Total Benefited Families"
             value={project.total_benefited_families}
           />
-          <ReadOnlyField label="Impact" value={project.impact} />
         </div>
       </div>
 

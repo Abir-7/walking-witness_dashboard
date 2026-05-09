@@ -10,7 +10,6 @@ export interface ProjectDetail extends Project {
   program: string; // Project Name in details (e.g. Kingdom Empowerment)
   
   // Basic Information
-  village: string;
   basicInfoLocation: string; // Location in basic info
   pastor: string;
   sponsor: string;
@@ -20,7 +19,6 @@ export interface ProjectDetail extends Project {
   stories: string;
   details: string;
   recentUpdates: string;
-  impact: string;
   
   // Lists
   pastorSupport: string[];

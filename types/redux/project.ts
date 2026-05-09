@@ -19,7 +19,6 @@ export interface TProject {
     image: string;
   };
   cover_image: string;
-  village: string;
   location: string;
   pastor_name: string;
   sponsor_name: string;
@@ -28,7 +27,6 @@ export interface TProject {
   recent_updates: string;
   project_stories: string;
   total_benefited_families: number;
-  impact: string;
   status: "published" | "draft" | string; // you can add other statuses if needed
   created_at: string; // ISO date string
   updated_at: string; // ISO date string
