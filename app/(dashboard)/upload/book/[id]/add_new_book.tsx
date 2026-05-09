@@ -318,7 +318,7 @@ const AddPdfModal = ({ bookId }: AddPdfModalProps) => {
             disabled={isLoading}
             className="w-full bg-red-500"
           >
-            Add PDF
+            {isLoading ? "Adding..." : "Add PDF"}
           </Button>
         </form>
       </DialogContent>

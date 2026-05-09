@@ -12,7 +12,7 @@ import {
 } from "@/lib/redux/api/dashboardApi";
 import { useUpdateProjectMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { baseUrl } from "@/config/evn";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 type ProjectFormData = {
@@ -40,6 +40,7 @@ type ProjectFormData = {
 };
 
 export default function ProjectEditPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const projectId = Number(params?.id);
 
@@ -173,6 +174,7 @@ export default function ProjectEditPage() {
 
       await updateProject({ id: projectId, body: formData }).unwrap();
       toast.success("Project updated successfully");
+      router.push(`/projects/${projectId}`);
     } catch (err: any) {
       console.error("Update failed", err);
       toast.error("Project update failed");
@@ -280,7 +282,7 @@ export default function ProjectEditPage() {
         className="px-5 py-3 bg-red-400 text-white rounded-lg font-medium"
         disabled={isUpdating}
       >
-        Update Project
+        {isUpdating ? "Updating..." : "Update Project"}
       </Button>
     </form>
   );

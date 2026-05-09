@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useGetProgramQuery } from "@/lib/redux/api/dashboardApi";
 import { useUpdateProgramMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type FormValues = {
   title: string;
@@ -17,6 +18,7 @@ type FormValues = {
 };
 
 const UploadContent = ({ contentId }: { contentId: string }) => {
+  const router = useRouter();
   console.log(contentId);
   const [updateProgram, { isLoading: isUpdating, error }] =
     useUpdateProgramMutation();
@@ -63,12 +65,12 @@ const UploadContent = ({ contentId }: { contentId: string }) => {
     formData.append("description", data.description);
 
     try {
-      const res = await updateProgram({
+      await updateProgram({
         id: contentId,
         data: formData,
       }).unwrap();
       toast.success("Content updated successfully");
-      console.log("Update success:", res);
+      router.push(`/upload/content/${contentId}`);
     } catch (err) {
       toast.error("Failed to update content");
       console.error("Update error:", err);

@@ -17,6 +17,7 @@ import {
 import { useUploadBookMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { useGetBookLanguagesQuery } from "@/lib/redux/api/dashboardApi";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 type BookFormValues = {
   bookName: string;
@@ -28,6 +29,7 @@ type BookFormValues = {
 };
 
 export default function UploadBook() {
+  const router = useRouter();
   const {
     control,
     handleSubmit,
@@ -73,6 +75,7 @@ export default function UploadBook() {
 
       await uploadBook(formData).unwrap();
       toast.success("Book uploaded successfully");
+      router.push("/upload");
     } catch (error) {
       console.error(error);
       toast.error("Failed to upload book");
@@ -273,7 +276,7 @@ export default function UploadBook() {
           disabled={isLoading || languagesLoading}
           className="ms-5 bg-red-500"
         >
-          Save Book
+          {isLoading ? "Saving..." : "Save Book"}
         </Button>
       </form>
     </div>

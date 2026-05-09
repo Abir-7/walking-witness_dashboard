@@ -13,6 +13,7 @@ import { useCreateProjectMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { baseUrl } from "@/config/evn";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type ProjectFormData = {
   cover_image: FileList | null;
@@ -39,6 +40,7 @@ type ProjectFormData = {
 };
 
 export default function ProjectCreateForm() {
+  const router = useRouter();
   const { data: programs = [], isLoading: loadingPrograms } =
     useGetProgramsQuery();
   const { data: categories = [], isLoading: loadingCategory } =
@@ -141,8 +143,7 @@ export default function ProjectCreateForm() {
 
       await createProject({ body: formData }).unwrap();
       toast.success("Project created successfully");
-      reset(); // reset form
-      setCoverPreview(null);
+      router.push("/projects");
     } catch (err: any) {
       console.error("Create failed", err);
       toast.error("Failed to create project");
@@ -282,9 +283,10 @@ export default function ProjectCreateForm() {
 
       <Button
         type="submit"
+        disabled={isCreating}
         className="px-5 py-3 bg-red-400 text-white rounded-lg font-medium"
       >
-        Create Project
+        {isCreating ? "Creating..." : "Create Project"}
       </Button>
     </form>
   );
