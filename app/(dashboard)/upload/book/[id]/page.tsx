@@ -8,6 +8,7 @@ import { useGetBookQuery } from "@/lib/redux/api/dashboardApi";
 import DashboardHeader from "@/components/Dashboard/Shared/DashboardHeader";
 import PdfItem from "./PdfItem";
 import AddPdfModal from "./add_new_book";
+import EditBookModal from "./edit_book_modal";
 
 export interface TBook {
   id: number;
@@ -48,7 +49,7 @@ const BookDetailsPage: React.FC = () => {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid md:grid-cols-3 gap-8">
           {/* Cover */}
-          <div className="relative h-96 rounded-xl overflow-hidden  bg-white">
+          <div className="relative h-96 rounded-xl overflow-hidden  bg-white border">
             <Image
               src={book.cover}
               alt={book.name}
@@ -61,9 +62,16 @@ const BookDetailsPage: React.FC = () => {
 
           {/* Info */}
           <div className="md:col-span-2 flex flex-col gap-6">
-            <h1 className="text-4xl font-extrabold text-gray-900">
-              {book.name}
-            </h1>
+            <div className="flex justify-between items-start">
+              <h1 className="text-4xl font-extrabold text-gray-900">
+                {book.name}
+              </h1>
+              <EditBookModal
+                bookId={book.id}
+                initialName={book.name}
+                initialCover={book.cover}
+              />
+            </div>
 
             {/* Languages */}
             {book.languages?.length > 0 && (
@@ -109,16 +117,6 @@ const BookDetailsPage: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Optional: description section */}
-        {/* {book.description && (
-          <div className="mt-10 bg-white p-6 rounded-lg shadow-lg border">
-            <h3 className="text-xl font-semibold mb-3 text-gray-800">
-              Description
-            </h3>
-            <p className="text-gray-700">{book.description}</p>
-          </div>
-        )} */}
       </div>
     </div>
   );

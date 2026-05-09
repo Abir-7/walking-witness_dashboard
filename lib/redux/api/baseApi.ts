@@ -4,7 +4,7 @@ import type { RootState } from "../store";
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://api.walkingwitnessapp.org/api/v1",
+    baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/api/v1`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
       if (token) {

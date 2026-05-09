@@ -25,6 +25,13 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Projects"],
     }),
+    deleteProject: builder.mutation<void, number | string>({
+      query: (id) => ({
+        url: `/dashboard/project-details/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Projects"],
+    }),
     createProject: builder.mutation<void, { body: FormData }>({
       query: ({ body }) => ({
         url: "/dashboard/projects",
@@ -110,14 +117,14 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Books"],
     }),
-    addBookPdf: builder.mutation<
-      any,
-      { bookId: number | string; data: FormData }
+    updateBook: builder.mutation<
+      { message: string },
+      { bookId: number | string; body: FormData }
     >({
-      query: ({ bookId, data }) => ({
+      query: ({ bookId, body }) => ({
         url: `/books/details/${bookId}`,
         method: "PUT",
-        body: data,
+        body,
       }),
       invalidatesTags: ["Books"],
     }),
@@ -141,6 +148,7 @@ export const dashboardWriteApi = baseApi.injectEndpoints({
 
 export const {
   useUpdateProjectMutation,
+  useDeleteProjectMutation,
   useCreateProjectMutation,
   useUpdatePrivacyPoliciesMutation,
   useDeletePrivacyPolicyMutation,
@@ -151,7 +159,7 @@ export const {
   useAddBookLanguageMutation,
   useAddCategoryMutation,
   useRemoveBookLanguageMutation,
-  useAddBookPdfMutation,
+  useUpdateBookMutation,
   useSoftDeleteCategoryMutation,
   useSoftDeleteLanguageMutation,
 } = dashboardWriteApi;

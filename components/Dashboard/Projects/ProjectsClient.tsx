@@ -2,21 +2,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PlusSignSquareIcon } from "@hugeicons/core-free-icons";
 import CPagination from "../CPagination";
 
 import { useGetProjectsQuery } from "@/lib/redux/api/dashboardApi";
+import { useDeleteProjectMutation } from "@/lib/redux/api/dashboardWriteApi";
 import { TProject } from "@/types/redux/project";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { DeleteConfirmationModal } from "../Shared/DeleteConfirmationModal";
+import { toast } from "sonner";
 
 export function ProjectsClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(1);
+
+  // Delete state
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [deleteProject, { isLoading: isDeleting }] = useDeleteProjectMutation();
 
   // debounce search input
   useEffect(() => {
@@ -36,9 +45,16 @@ export function ProjectsClient() {
 
   const currentData: TProject[] = data?.results || [];
 
-  const handleRowClick = (id: number) => {
-    console.log("Clicked project ID:", id);
-    // Open modal or navigate to project detail here
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    try {
+      await deleteProject(deleteId).unwrap();
+      toast.success("Project deleted successfully");
+      setIsDeleteModalOpen(false);
+      setDeleteId(null);
+    } catch (error) {
+      toast.error("Failed to delete project");
+    }
   };
 
   if (isError)
@@ -97,6 +113,9 @@ export function ProjectsClient() {
                 <th className="p-5 font-medium text-secondary dark:text-gray-400">
                   Category
                 </th>
+                <th className="p-5 font-medium text-secondary dark:text-gray-400 text-center">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -115,13 +134,15 @@ export function ProjectsClient() {
                     <td className="p-5">
                       <Skeleton className="h-4 w-20" />
                     </td>
+                    <td className="p-5">
+                      <Skeleton className="h-4 w-10 mx-auto" />
+                    </td>
                   </tr>
                 ))
               ) : currentData.length > 0 ? (
                 currentData.map((item) => (
                   <tr
                     key={item.id}
-                    onClick={() => handleRowClick(item.id)}
                     className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                   >
                     <td className="p-5 font-medium text-primary">
@@ -136,12 +157,26 @@ export function ProjectsClient() {
                     <td className="p-5 text-primary dark:text-blue-400">
                       {item.category.name}
                     </td>
+                    <td className="p-5 text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteId(item.id);
+                          setIsDeleteModalOpen(true);
+                        }}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={4}
+                    colSpan={5}
                     className="px-6 py-8 text-center text-secondary dark:text-gray-400"
                   >
                     No projects found
@@ -161,6 +196,15 @@ export function ProjectsClient() {
           onPageChange={(newPage) => setPage(newPage)}
         />
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Delete Project"
+        description="Are you sure you want to delete this project? This action cannot be undone."
+      />
     </div>
   );
 }

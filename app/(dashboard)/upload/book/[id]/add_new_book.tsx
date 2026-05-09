@@ -208,7 +208,7 @@ import {
 } from "@/components/ui/select";
 
 import { useGetBookLanguagesQuery } from "@/lib/redux/api/dashboardApi";
-import { useAddBookPdfMutation } from "@/lib/redux/api/dashboardWriteApi";
+import { useUpdateBookMutation } from "@/lib/redux/api/dashboardWriteApi";
 
 type AddPdfFormValues = {
   pdf: File | null;
@@ -228,7 +228,7 @@ const AddPdfModal = ({ bookId }: AddPdfModalProps) => {
   });
 
   const { data: languages } = useGetBookLanguagesQuery();
-  const [addBookPdf, { isLoading }] = useAddBookPdfMutation();
+  const [updateBook, { isLoading }] = useUpdateBookMutation();
 
   const onSubmit = async (values: AddPdfFormValues) => {
     if (!values.pdf || !values.language) return;
@@ -238,7 +238,7 @@ const AddPdfModal = ({ bookId }: AddPdfModalProps) => {
     formData.append("language", values.language);
 
     try {
-      await addBookPdf({ bookId, data: formData }).unwrap();
+      await updateBook({ bookId, body: formData }).unwrap();
       toast.success("PDF added successfully");
       reset();
     } catch {
