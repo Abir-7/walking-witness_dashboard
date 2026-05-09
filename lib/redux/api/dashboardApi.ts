@@ -81,6 +81,7 @@ export const dashboardApi = baseApi.injectEndpoints({
 
         return `/dashboard/projects?${params.toString()}`;
       },
+      providesTags: ["Projects"],
     }),
     getProjectDetails: builder.query<TProject, number>({
       query: (id) => `/dashboard/project-details/${id}`,
