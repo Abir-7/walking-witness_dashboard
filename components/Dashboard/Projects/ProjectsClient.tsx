@@ -156,10 +156,11 @@ export function ProjectsClient() {
                 currentData.map((item) => (
                   <tr
                     key={item.id}
+                    onClick={() => router.push(`/projects/${item.id}`)}
                     className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                   >
                     <td className="p-5 font-medium text-primary">
-                      <Link href={`/projects/${item.id}`}> {item.title}</Link>
+                      {item.title}
                     </td>
                     <td className="p-5 text-secondary dark:text-gray-400">
                       {item.established_date}

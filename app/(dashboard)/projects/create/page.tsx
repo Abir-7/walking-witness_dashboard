@@ -213,7 +213,9 @@ export default function ProjectCreateForm() {
             {...register("program")}
             className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            <option value="">Select a program</option>
+            <option value="" disabled hidden>
+  Select a program
+</option>
             {programs.map((prog) => (
               <option key={prog.id} value={prog.id}>
                 {prog.name}
@@ -229,7 +231,9 @@ export default function ProjectCreateForm() {
             {...register("category")}
             className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           >
-            <option value="">Select a category</option>
+            <option value="" disabled hidden>
+  Select a category
+</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}

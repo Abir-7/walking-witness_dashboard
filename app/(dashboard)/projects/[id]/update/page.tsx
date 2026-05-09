@@ -318,7 +318,9 @@ function SelectField({ label, options, ...props }: any) {
         {...props}
         className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
       >
-        <option value="">Select {label}</option>
+        <option value="" disabled hidden>
+          Select {label}
+        </option>
         {options?.map((opt: any) => (
           <option key={opt.id} value={opt.id}>
             {opt.name}
