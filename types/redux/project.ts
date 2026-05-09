@@ -19,6 +19,7 @@ export interface TProject {
     image: string;
   };
   cover_image: string;
+  village: string;
   location: string;
   pastor_name: string;
   sponsor_name: string;

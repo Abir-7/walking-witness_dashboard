@@ -19,6 +19,7 @@ type ProjectFormData = {
   title: string;
   program: string;
   category: string;
+  village: string;
   location: string;
   pastor_name: string;
   sponsor_name: string;
@@ -53,6 +54,7 @@ export default function ProjectCreateForm() {
         title: "",
         program: "",
         category: "",
+        village: "",
         location: "",
         pastor_name: "",
         sponsor_name: "",
@@ -234,6 +236,7 @@ export default function ProjectCreateForm() {
             ))}
           </select>
         </div>
+        <Input label="Village" {...register("village")} />
         <Input label="Location" {...register("location")} />
         <Input label="Pastor Name" {...register("pastor_name")} />
         <Input label="Sponsor Name" {...register("sponsor_name")} />

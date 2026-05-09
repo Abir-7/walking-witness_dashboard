@@ -61,6 +61,7 @@ const INITIAL_DETAILS: Record<string, ProjectDetail> = {
     location: "Tanzania",
     category: "Cow",
     program: "Kingdom Empowerment",
+    village: "Kirembe Park View",
     basicInfoLocation: "Lower Kasese, Kasese District Uganda",
     pastor: "Alvin",
     sponsor: "Eric Lumika",
@@ -97,6 +98,7 @@ export const ProjectsService = {
       ...project,
       ...(detail || {
         program: "",
+        village: "",
         basicInfoLocation: "",
         pastor: "",
         sponsor: "",
